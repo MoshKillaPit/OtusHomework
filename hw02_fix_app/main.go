@@ -2,14 +2,14 @@ package main
 
 import (
 	"fmt"
+
 	"github.com/fixme_my_friend/hw02_fix_app/printer"
 	"github.com/fixme_my_friend/hw02_fix_app/reader"
 	"github.com/fixme_my_friend/hw02_fix_app/types"
 )
 
 func main() {
-	var path string = "data.json"
-
+	path := "data.json"
 	fmt.Printf("Enter data file path: ")
 	fmt.Scanln(&path)
 
@@ -18,11 +18,9 @@ func main() {
 
 	if len(path) == 0 {
 		path = "data.json"
-	} else {
 	}
 
 	staff, err = reader.ReadJSON(path)
-
 	if err != nil {
 		panic(err)
 	}
