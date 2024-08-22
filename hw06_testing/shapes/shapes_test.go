@@ -15,14 +15,14 @@ func Test_calculateArea(t *testing.T) {
 		{
 			name:    "MinusArea",
 			args:    args{rectangle{2, -2}},
-			want:    -4,
-			wantErr: false,
+			want:    0,
+			wantErr: true,
 		},
 		{
 			name:    "Shape",
 			args:    args{-1},
 			want:    0,
-			wantErr: false,
+			wantErr: true,
 		},
 		{
 			name:    "TestZero",
