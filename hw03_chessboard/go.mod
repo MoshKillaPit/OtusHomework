@@ -1,3 +1,3 @@
-module github.com/MoshKillaPit/OtusHomework/hw04_struct_comparator
+module github.com/MoshKillaPit/OtusHomework/hw03_chessboard
 
 go 1.20
