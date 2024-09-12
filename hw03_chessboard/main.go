@@ -2,6 +2,7 @@ package main
 
 import "fmt"
 
+
 func main() {
 	var size int
 	fmt.Println("Введите размер доски:")
