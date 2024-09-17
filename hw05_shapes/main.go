@@ -18,7 +18,7 @@ func calculateArea(s any) (float64, error) {
 	}
 	area := shape.Calculation()
 	if area <= 0 {
-		return 0, errors.New("площадь фигуры должна быть больше нуля")
+		return 0, errors.New("площадь фигуры должна быть больше нуляя")
 	}
 	return area, nil
 }
