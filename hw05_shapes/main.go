@@ -27,33 +27,33 @@ type circle struct { // S = π × r в квадрате
 	radius float64
 }
 type rectangle struct {
-	Height float64
-	Width  float64
+	height float64
+	width  float64
 }
 type triangle struct {
-	Height float64
-	Width  float64 // S = a * h / 2.
+	height float64
+	width  float64 // S = a * h / 2.
 }
 
-func (c circle) Calculation() float64 {
+func (c circle) calculation() float64 {
 	return c.radius * pi
 }
 
-func (r rectangle) Calculation() float64 {
-	return r.Height * r.Width
+func (r rectangle) calculation() float64 {
+	return r.height * r.width
 }
 
-func (t triangle) Calculation() float64 {
-	return t.Width / 2 * t.Height
+func (t triangle) calculation() float64 {
+	return t.width / 2 * t.height
 }
 
 func main() {
 	Circle := circle{2.1}
-	Rectangle := rectangle{Height: 12, Width: 0}
-	Triangle := triangle{Height: 10, Width: 12}
-	fmt.Println("Круг:", Circle.Calculation())
-	fmt.Println("Прямоугольник:", Rectangle.Calculation())
-	fmt.Println("Треугольник:", Triangle.Calculation())
+	Rectangle := rectangle{height: 12, width: 0}
+	Triangle := triangle{height: 10, width: 12}
+	fmt.Println("Круг:", Circle.calculation())
+	fmt.Println("Прямоугольник:", Rectangle.calculation())
+	fmt.Println("Треугольник:", Triangle.calculation())
 	RandomCircle, err1 := calculateArea(Circle)
 	if err1 != nil {
 		fmt.Println("Ошибка", err1)
