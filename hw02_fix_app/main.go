@@ -2,10 +2,9 @@ package main
 
 import (
 	"fmt"
-
-	"github.com/MoshKillaPit/OtusHomework/hw02_fix_app/printer"
-	"github.com/MoshKillaPit/OtusHomework/hw02_fix_app/reader"
-	"github.com/MoshKillaPit/OtusHomework/hw02_fix_app/types"
+	"github.com/fixme_my_friend/hw06_testing/fix_app/types"
+	"github.com/fixme_my_friend/hw06_testing/fix_app/types/printer"
+	"github.com/fixme_my_friend/hw06_testing/fix_app/types/reader"
 )
 
 func main() {
