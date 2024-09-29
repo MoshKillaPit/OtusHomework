@@ -23,13 +23,12 @@ func countWords(text string) map[string]int {
 	text2 := lowClear(text1)
 	m := make(map[string]int)
 	for _, word := range text2 {
-		m[word] = m[word] + 1
+		m[word]++
 	}
 	return m
 }
 
 func main() {
 	text := "How are you ? ! Are are :"
-
 	fmt.Println(countWords(text))
 }
