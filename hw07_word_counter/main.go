@@ -1,30 +1,35 @@
-//- Напишите функцию countWords, которая принимает на вход строку текста и возвращает мапу, содержащую количество упоминаний каждого слова в тексте.
-//- Вы можете использовать мапу для отображения слова в его частоту появления в тексте
-//- Вы также можете использовать слайс и функции для работы со строками, чтобы разделить текст на отдельные слова и очистить
-//  их от пунктуации и пробелов перед подсчетом;
-//- Напишите юнит тест на реализованную функцию;
-
 package main
 
 import (
 	"fmt"
+	"regexp"
 	"strings"
 )
 
-var text string
-
-//var cache map[string]int
-
-// func countWords (string) map[string]int {}
-// Функция разбития строки на массив строк
-func stringGet(string) {
-	fmt.Println("Пихни суда текст")
-	fmt.Scanf("%s", &text)
-	Words := strings.Fields(text)
-	fmt.Println(Words)
-	return
+func punkDelete(text string) string {
+	re := regexp.MustCompile(`[^\w\s]`)
+	stringClear := re.ReplaceAllString(text, "") // Удалили пунктацию
+	return stringClear
 }
+
+func lowClear(stringClear string) []string {
+	lowClear := strings.ToLower(stringClear)
+	words := strings.Fields(lowClear)
+	return words
+}
+
+func countWords(text string) map[string]int {
+	text1 := punkDelete(text)
+	text2 := lowClear(text1)
+	m := make(map[string]int)
+	for _, word := range text2 {
+		m[word] = m[word] + 1
+	}
+	return m
+}
+
 func main() {
-	massivString := stringGet
-	fmt.Println(massivString)
+	text := "How are you ? ! Are are :"
+
+	fmt.Println(countWords(text))
 }
