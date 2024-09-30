@@ -1,9 +1,10 @@
 package reader
 
 import (
-	"github.com/MoshKillaPit/OtusHomework/hw06_testing/fixapp/types"
 	"reflect"
 	"testing"
+
+	"github.com/MoshKillaPit/OtusHomework/hw06_testing/fixapp/types"
 )
 
 func TestReadJSON(t *testing.T) {
@@ -19,12 +20,13 @@ func TestReadJSON(t *testing.T) {
 		{
 			name: "Test",
 			args: args{"../data.json"},
-			want: []types.Employee{{
-				UserID:       10,
-				Age:          25,
-				Name:         "Rob",
-				DepartmentID: 3,
-			},
+			want: []types.Employee{
+				{
+					UserID:       10,
+					Age:          25,
+					Name:         "Rob",
+					DepartmentID: 3,
+				},
 				{
 					UserID:       11,
 					Age:          30,

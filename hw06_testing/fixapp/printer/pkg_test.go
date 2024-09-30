@@ -1,8 +1,9 @@
 package printer
 
 import (
-	"github.com/MoshKillaPit/OtusHomework/hw06_testing/fixapp/types"
 	"testing"
+
+	"github.com/MoshKillaPit/OtusHomework/hw06_testing/fixapp/types"
 )
 
 func TestPrintStaff(t *testing.T) {
@@ -15,7 +16,7 @@ func TestPrintStaff(t *testing.T) {
 	}{
 		{
 			name: "Test",
-			args: args{[]types.Employee{{
+			args: args{staff: []types.Employee{{
 				UserID:       2,
 				Age:          12,
 				Name:         "Jon",
@@ -32,7 +33,7 @@ func TestPrintStaff(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
+		t.Run(tt.name, func(_ *testing.T) {
 			PrintStaff(tt.args.staff)
 		})
 	}

@@ -1,4 +1,4 @@
-package main
+package chessboarddz
 
 import (
 	"errors"
@@ -7,7 +7,7 @@ import (
 
 func checksize(size int) error {
 	if size <= 0 {
-		return errors.New("Размер должен быть больше нуля")
+		return errors.New("размер должен быть больше нуля")
 	}
 	return nil
 }
@@ -28,5 +28,3 @@ func paint(size int) {
 		fmt.Println("")
 	}
 }
-
-
