@@ -6,8 +6,9 @@ import (
 	"strings"
 )
 
+var re = regexp.MustCompile(`[^\w\sА-Яа-я]`) // Регистр допустимых символов
+
 func punkDelete(text string) string {
-	re := regexp.MustCompile(`[^\w\s]`)
 	stringClear := re.ReplaceAllString(text, "") // Удалили пунктацию
 	return stringClear
 }
@@ -29,6 +30,6 @@ func countWords(text string) map[string]int {
 }
 
 func main() {
-	text := "How are you ? ! Are are :"
+	text := "How are you ? ! Are are : пирвет пирвет Пи Пи пи"
 	fmt.Println(countWords(text))
 }
