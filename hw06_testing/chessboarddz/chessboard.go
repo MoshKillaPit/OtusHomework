@@ -2,7 +2,6 @@ package chessboarddz
 
 import (
 	"errors"
-	"fmt"
 )
 
 func checksize(size int) error {
@@ -12,19 +11,21 @@ func checksize(size int) error {
 	return nil
 }
 
-func paint(size int) {
+func paint(size int) string {
 	if err := checksize(size); err != nil {
-		fmt.Println("Ошибка значения:", err)
-		return
+		return "Ошибка значения: " + err.Error()
 	}
+
+	var result string
 	for stroka := 0; stroka < size; stroka++ {
 		for kletka := 0; kletka < size; kletka++ {
 			if (stroka+kletka)%2 == 0 {
-				fmt.Print(" ")
+				result += " "
 			} else {
-				fmt.Print("#")
+				result += "#"
 			}
 		}
-		fmt.Println("")
+		result += "\n"
 	}
+	return result
 }
