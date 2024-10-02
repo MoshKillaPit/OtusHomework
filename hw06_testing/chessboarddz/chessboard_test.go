@@ -2,62 +2,65 @@ package chessboarddz
 
 import "testing"
 
-func Test_value(t *testing.T) {
+func Test_checksize(t *testing.T) {
+	type args struct {
+		size int
+	}
 	tests := []struct {
 		name    string
-		want    int
+		args    args
 		wantErr bool
 	}{
 		{
-			name:    "TestSize",
-			want:    0,
+			name:    "Test",
+			args:    args{2},
+			wantErr: false,
+		},
+		{
+			name:    "Zero",
+			args:    args{0},
 			wantErr: true,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := value()
-			if (err != nil) != tt.wantErr {
-				t.Errorf("value() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
-			if got != tt.want {
-				t.Errorf("value() got = %v, want %v", got, tt.want)
+			if err := checksize(tt.args.size); (err != nil) != tt.wantErr {
+				t.Errorf("checksize() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
 	}
 }
 
-func Test_chessboard(t *testing.T) {
+func Test_paint1(t *testing.T) {
+	type args struct {
+		size int
+	}
 	tests := []struct {
 		name string
-		want int
+		args args
+		want string
 	}{
 		{
 			name: "Test",
-			want: 0,
+			args: args{0},
+			want: "Ошибка значения: размер должен быть больше нуля",
+		},
+		{
+			name: "Norm",
+			args: args{1},
+			want: "",
+		},
+		{
+			name: "Test",
+			args: args{4},
+			want: "",
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := chessboard(); got != tt.want {
-				t.Errorf("chessboard() = %v, want %v", got, tt.want)
+			if got := paint(tt.args.size); got != tt.want {
+				t.Errorf("paint() = %v, want %v", got, tt.want)
 			}
-		})
-	}
-}
-
-func Test_chessboarddz(t *testing.T) {
-	tests := []struct {
-		name string
-	}{
-		{
-			name: "Test",
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			chessboarddz()
 		})
 	}
 }

@@ -2,41 +2,30 @@ package chessboarddz
 
 import (
 	"errors"
-	"fmt"
 )
 
-var size int
+func checksize(size int) error {
+	if size <= 0 {
+		return errors.New("размер должен быть больше нуля")
+	}
+	return nil
+}
 
-func chessboard() int {
+func paint(size int) string {
+	if err := checksize(size); err != nil {
+		return "Ошибка значения: " + err.Error()
+	}
+
+	var result string
 	for stroka := 0; stroka < size; stroka++ {
 		for kletka := 0; kletka < size; kletka++ {
 			if (stroka+kletka)%2 == 0 {
-				fmt.Print(" ")
+				result += " "
 			} else {
-				fmt.Print("#")
+				result += "#"
 			}
 		}
-		fmt.Println("")
+		result += "\n"
 	}
-	return 0
+	return result
 }
-
-func value() (int, error) {
-	fmt.Println("Введите размер доски:")
-	fmt.Scanf("%d", &size)
-	// 	shape, ok := s.(Shape) // Приведение типа
-	ok := size
-	if ok <= 0 {
-		return 0, errors.New("размер доски должен быть больше нуля")
-	}
-	return size, nil
-}
-
-func chessboarddz() {
-	valueknow, _ := value()
-	fmt.Println(valueknow)
-	chess := chessboard()
-	fmt.Println(chess)
-}
-
-//
