@@ -1,6 +1,4 @@
-package main
-
-import "fmt"
+package structcomparator
 
 type CompareMode int
 
@@ -86,34 +84,4 @@ func (bc BookComparator) Compare(b1, b2 Book) bool {
 
 func NewComparator(mode CompareMode) BookComparator {
 	return BookComparator{mode: mode}
-}
-
-func main() {
-	Book1 := Book{
-		id:     10,
-		title:  "John Smith",
-		author: "Dima",
-		year:   2012,
-		size:   20,
-		rate:   5.4,
-	}
-	Book2 := Book{
-		id:     20,
-		title:  "Jane",
-		author: "Rezanov",
-		year:   2012,
-		size:   10,
-		rate:   2.4,
-	}
-	fmt.Println(Book1)
-
-	Book1.SetID(1)
-	fmt.Println(Book2.GetTitle())
-
-	yearComparator := NewComparator(CompareByYear)
-	fmt.Println(yearComparator.Compare(Book1, Book2))
-	sizeComparator := NewComparator(CompareBySize)
-	fmt.Println(sizeComparator.Compare(Book1, Book2))
-	rateComparator := NewComparator(CompareByRate)
-	fmt.Println(rateComparator.Compare(Book1, Book2))
 }
