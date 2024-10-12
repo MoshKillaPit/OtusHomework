@@ -6,4 +6,7 @@ toolchain go1.22.2
 
 require google.golang.org/protobuf v1.35.1
 
-require github.com/golang/protobuf v1.5.4 // indirect
+require (
+	github.com/golang/protobuf v1.5.4 // indirect
+	github.com/stretchr/testify v1.9.0 // indirect
+)

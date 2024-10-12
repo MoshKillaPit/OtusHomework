@@ -3,7 +3,10 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/golang/protobuf/proto"
+	"log"
+
+	protobook "github.com/MoshKillaPit/OtusHomework/hw09_serialize/proto"
+	"google.golang.org/protobuf/proto"
 )
 
 type Book struct {
@@ -15,56 +18,42 @@ type Book struct {
 	Rate   float64 `json:"rate"`
 }
 
-type Maket struct {
-	ID     int     `json:"id"`
-	Title  string  `json:"title"`
-	Author string  `json:"author"`
-	Year   int     `json:"year"`
-	Size   int     `json:"size"`
-	Rate   float64 `json:"rate"`
+func (b *Book) String() string {
+	return fmt.Sprintf("Maket{ID: %v, Title: %v, Author: %v, Year: %v, Size: %v, Rate: %v}",
+		b.ID, b.Title, b.Author, b.Year, b.Size, b.Rate)
 }
 
-type ProtoBook struct {
-	ID     int    `json:"id"`
-	Title  string `json:"title"`
-	Author string `json:"author"`
-	Year   int    `json:"year"`
-	Size   int    `json:"size"`
-	Rate   string `json:"rate"`
-}
+func (b *Book) ProtoMessage() {}
 
-func (b *Maket) Reset() {
-	b.ID = 0
-	b.Title = ""
-	b.Author = ""
-	b.Year = 0
-	b.Size = 0
-	b.Rate = 0
-}
-
-func (b *Maket) String() string {
-	return fmt.Sprintf("Maket{ID: %v, Title: %v, Author: %v, Year: %v, Size: %v, Rate: %v}", b.ID, b.Title, b.Author, b.Year, b.Size, b.Rate)
-}
-
-func (b *Maket) ProtoMessage() {
-
-}
-func (b *Maket) UnmarshalJSON(data []byte) error { // Делаем ансерилизацию для макета
-	type Alias Maket
-	aux := &struct {
-		*Alias
-	}{
-		Alias: (*Alias)(b),
+func (b *Book) ProtoMarshal() ([]byte, error) {
+	bookProto := &protobook.Book{
+		ID:     int32(b.ID),
+		Title:  b.Title,
+		Author: b.Author,
+		Year:   int32(b.Year),
+		Size:   int32(b.Size),
+		Rate:   b.Rate,
 	}
-	return json.Unmarshal(data, aux)
+
+	return proto.Marshal(bookProto)
 }
 
-func (b *Maket) ProtoMarshal() ([]byte, error) {
-	return proto.Marshal(b)
-}
+func (b *Book) ProtoUnmarshal(data []byte) error {
+	bookProto := &protobook.Book{}
 
-func (b *Maket) ProtoUnmarshal(data []byte) error {
-	return proto.Unmarshal(data, b)
+	err := proto.Unmarshal(data, bookProto)
+	if err != nil {
+		return err
+	}
+
+	b.ID = int(bookProto.ID)
+	b.Title = bookProto.Title
+	b.Author = bookProto.Author
+	b.Year = int(bookProto.Year)
+	b.Size = int(bookProto.Size)
+	b.Rate = bookProto.Rate
+
+	return nil
 }
 
 func (b *Book) MarshalJSON() ([]byte, error) { // Делаем сериализацию
@@ -75,7 +64,8 @@ func (b *Book) MarshalJSON() ([]byte, error) { // Делаем сериализ�
 		Alias: (*Alias)(b),
 	})
 }
-func (b *Book) UnmarshalJSON(data []byte) error { //Делаем ансериализацию
+
+func (b *Book) UnmarshalJSON(data []byte) error { // Делаем ансериализацию
 	type Alias Book
 	aux := &struct {
 		*Alias
@@ -85,28 +75,8 @@ func (b *Book) UnmarshalJSON(data []byte) error { //Делаем ансериа�
 	return json.Unmarshal(data, aux) // Расшифровываем байты и передаём их в структуру
 }
 
-func (p *ProtoBook) ProtoUnmarshal(data []byte) error {
-	return proto.Unmarshal(data, p)
-}
-
-func (p *ProtoBook) Reset() {
-	p.ID = 0
-	p.Title = ""
-	p.Author = ""
-	p.Year = 0
-	p.Size = 0
-}
-
-func (p *ProtoBook) String() string {
-	return fmt.Sprintf("Maket{ID: %v, Title: %v, Author: %v, Year: %v, Size: %v, Rate: %v}", p.ID, p.Title, p.Author, p.Year, p.Size, p.Rate)
-}
-
-func (p *ProtoBook) ProtoMessage() {
-
-}
-
 func main() {
-	Books := Book{ // Объявляем переменную и через неё передаём параметры в структуру книги
+	book := Book{ // Объявляем переменную и через неё передаём параметры в структуру книги
 		ID:     1,
 		Title:  "Book 1",
 		Author: "Author 1",
@@ -114,19 +84,25 @@ func main() {
 		Size:   2,
 		Rate:   4.2,
 	}
-	BookInfo, _ := Books.MarshalJSON() // Создаём новую переменую которая принимает слайс байтов из книги
-	Maket := Maket{}                   // Объявляем новую переменную с привязкой с структуре макета
-	Maket.UnmarshalJSON(BookInfo)      // Выполняем функцию преобразования байтов в структуру макета (Передача данных из книги (слайса байтов) в структуру макета)
-	fmt.Println("Макет:", Maket)       // Посмотреть правильность данных переданных в макет
-	// MAKETS DONE
+	jsonBytes, err := book.MarshalJSON() // Создаём новую переменую которая принимает слайс байтов из книги
+	if err != nil {
+		log.Fatalf("Ошибка сериализации JSON: %v", err)
+	}
+	fmt.Println(string(jsonBytes))
 
-	ProtoInfo, _ := Maket.ProtoMarshal()
+	protoBook := &protobook.Book{}
+	err = json.Unmarshal(jsonBytes, protoBook)
+	if err != nil {
+		log.Fatalf("Ошибка десериализации JSON: %v", err)
+	}
+	fmt.Printf("Десериализованная книга: %+v\n", protoBook)
 
-	fmt.Println(ProtoInfo)
+	protoBytes, err := book.ProtoMarshal()
+	if err != nil {
+		log.Fatalf("Ошибка сериализации PROTO: %v", err)
+	}
 
-	ProtoBook := ProtoBook{}
+	book.ProtoUnmarshal(protoBytes)
 
-	ProtoBook.ProtoUnmarshal(ProtoInfo)
-
-	fmt.Println(ProtoBook)
+	fmt.Println(book)
 }

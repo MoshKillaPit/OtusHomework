@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package example;
 
-option go_package = "GolandProjects/HelpME/OtusHomework/hw09_serialize/proto;proto";
+option go_package = "GolandProjects/HelpME/OtusHomework/hw09_serialize/protobook";
 
 message Book {
   int32 ID = 1;
