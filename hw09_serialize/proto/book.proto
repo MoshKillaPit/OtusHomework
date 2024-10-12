@@ -1,0 +1,14 @@
+syntax = "proto3";
+
+package example;
+
+option go_package = "GolandProjects/HelpME/OtusHomework/hw09_serialize/proto;proto";
+
+message Book {
+  int32 ID = 1;
+  string Title = 2;
+  string Author = 3;
+  int32 Year = 4;
+  int32 Size = 5;
+  double Rate = 6;
+}
