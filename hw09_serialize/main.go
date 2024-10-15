@@ -1,4 +1,11 @@
+// - Реализуйте структуру Book со следующими полями: ID, Title, Author, Year, Size, Rate (может быть дробным).
+// - Реализуйте для нее интерфейсы Marshaller и Unmarshaller  из пакета json.
+// - Составьте protobuf спецификацию для Book
+// - Реализуйте для нее интерфейс Message из пакета proto.
+// - Напишите фукции выполняющие сериализацию/десериализацию слайса объектов.
+// - Напишите юнит тесты на реализованные функции;
 package main
+
 
 import (
 	"encoding/json"
@@ -18,6 +25,29 @@ type Book struct {
 	Rate   float64 `json:"rate"`
 }
 
+
+type Marshaller interface {
+	MarshalJSON() ([]byte, error)
+}
+
+type Unmarshaller interface {
+	UnmarshalJSON([]byte) error
+}
+
+// func UnmarshallBook(book Marshaller) Unmarshaller {}
+
+func main() {
+	book := Book{
+		ID:     1,
+		Title:  "Go Programming Language",
+		Author: "J. R. Tolkien",
+		Year:   2009,
+		Size:   420,
+		Rate:   0.1,
+	}
+	fmt.Println(book)
+
+=======
 func (b *Book) String() string {
 	return fmt.Sprintf("Maket{ID: %v, Title: %v, Author: %v, Year: %v, Size: %v, Rate: %v}",
 		b.ID, b.Title, b.Author, b.Year, b.Size, b.Rate)
@@ -105,4 +135,5 @@ func main() {
 	book.ProtoUnmarshal(protoBytes)
 
 	fmt.Println(book)
+
 }

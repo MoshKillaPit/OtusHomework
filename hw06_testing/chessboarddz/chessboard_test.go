@@ -48,12 +48,14 @@ func Test_paint1(t *testing.T) {
 		{
 			name: "Norm",
 			args: args{1},
-			want: "",
+			want: " \n",
+
 		},
 		{
 			name: "Test",
 			args: args{4},
-			want: "",
+			want: " # #\n# # \n # #\n# # \n",
+
 		},
 	}
 	for _, tt := range tests {
