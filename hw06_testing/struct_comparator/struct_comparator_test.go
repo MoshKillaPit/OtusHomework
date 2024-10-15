@@ -468,6 +468,7 @@ func TestBook_GetAuthor(t *testing.T) {
 				rate:   0,
 			},
 			want: "John",
+
 		},
 	}
 	for _, tt := range tests {
