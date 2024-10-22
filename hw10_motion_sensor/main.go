@@ -16,50 +16,70 @@ import (
 )
 
 func BufioScannerInput(numbersChan chan []int) {
-	fmt.Println("Введите числа через пробел:")
-	scanner := bufio.NewScanner(os.Stdin)
-	scanner.Scan()
-	b := scanner.Text()
-	strValues := strings.Fields(b)
-	if len(strValues) > 10 { // Ограничение до 10 чисел за один ввод
-		strValues = strValues[:10]
-	}
-	size := make([]int, len(strValues))
-
-	for i, str := range strValues {
-		num, err := strconv.Atoi(str)
-		if err != nil {
-			fmt.Println("Ошибка преобразования: " + err.Error())
-			return
-		}
-		size[i] = num
-	}
+	defer close(numbersChan) // Закрываем канал после завершения функции
 	timeout := time.After(1 * time.Minute)
+	fmt.Println("Введите числа через пробел:")
+
 	for {
 		select {
-		case numbersChan <- size: // Начинаем отправку
-
-		case <-timeout: // Завершаем отправку спустя минуту
+		case <-timeout: // Завершаем ввод спустя минуту
+			fmt.Println("Время для ввода истекло")
 			return
+		default:
+			// Считывание данных
+			scanner := bufio.NewScanner(os.Stdin)
+			if scanner.Scan() {
+				b := scanner.Text()
+				strValues := strings.Fields(b)
+				if len(strValues) > 10 { // Ограничение до 10 чисел за один ввод
+					strValues = strValues[:10]
+				}
+				size := make([]int, 0, len(strValues)) // Инициализируем срез
+				for _, str := range strValues {
+					num, err := strconv.Atoi(str)
+					if err != nil {
+						fmt.Println("Ошибка преобразования: " + err.Error())
+						continue // Пропускаем некорректные значения
+					}
+					size = append(size, num) // Добавляем только корректные значения
+				}
+				numbersChan <- size
+			}
 		}
 	}
 }
 
-func refactor(numbersChan chan []int) int {
-	totalNumbers := <-numbersChan
-	fmt.Println("Полученные данные", totalNumbers)
-	totalCount := len(totalNumbers)
+func refactor(numbersChan chan []int, resultChan chan int) {
+	defer close(resultChan) // Закрываем канал после завершения работы горутины
+	count := 0
 	sum := 0
-	for _, num := range totalNumbers {
-		sum += num
+	for totalNumbers := range numbersChan {
+		count += len(totalNumbers)
+		for _, num := range totalNumbers {
+			sum += num
+		}
+		// Отправляем результат каждые 10 чисел
+		if count >= 10 {
+			resultChan <- sum / count
+			count = 0
+			sum = 0
+		}
 	}
-	result := sum / totalCount
-	return result
+	if count > 0 {
+		resultChan <- sum / count
+	}
 }
 
 func main() {
 	numbersChan := make(chan []int)
-	go BufioScannerInput(numbersChan)
-	go refactor(numbersChan)
-	fmt.Println(refactor(numbersChan))
+	resultChan := make(chan int)
+
+	go BufioScannerInput(numbersChan)    // Запустили горутину по сбору чисел
+	go refactor(numbersChan, resultChan) // Запустили обработку
+
+	for result := range resultChan {
+		fmt.Println("Результат:", result)
+	}
+
+	fmt.Println("Программа завершена")
 }
