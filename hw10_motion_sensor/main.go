@@ -7,79 +7,90 @@
 package main
 
 import (
-	"bufio"
 	"fmt"
-	"os"
-	"strconv"
-	"strings"
+	"math/rand"
 	"time"
 )
 
-func BufioScannerInput(numbersChan chan []int) {
-	defer close(numbersChan) // Закрываем канал после завершения функции
-	timeout := time.After(1 * time.Minute)
-	fmt.Println("Введите числа через пробел:")
+type Result struct {
+	SliceNumber int
+	Average     int
+}
 
-	for {
+type SliceData struct {
+	SliceNumber int
+	Numbers     []int
+}
+
+func randomNum(randomNumbers chan SliceData, limit int) {
+	defer close(randomNumbers)
+	timeout := time.After(1 * time.Minute)
+
+	numMas := []int{} // Один срез, в который пишем данные
+	sliceNumber := 1  // Переменная для нумерации срезов
+
+	for count := 0; count < limit; count++ {
 		select {
-		case <-timeout: // Завершаем ввод спустя минуту
-			fmt.Println("Время для ввода истекло")
+		case <-timeout:
+			fmt.Println("Время приёма данных истекло")
+			if len(numMas) > 0 { // Добавление оставшихся чисел после таймера
+				randomNumbers <- SliceData{SliceNumber: sliceNumber, Numbers: numMas}
+			}
 			return
 		default:
-			// Считывание данных
-			scanner := bufio.NewScanner(os.Stdin)
-			if scanner.Scan() {
-				b := scanner.Text()
-				strValues := strings.Fields(b)
-				if len(strValues) > 10 { // Ограничение до 10 чисел за один ввод
-					strValues = strValues[:10]
-				}
-				size := make([]int, 0, len(strValues)) // Инициализируем срез
-				for _, str := range strValues {
-					num, err := strconv.Atoi(str)
-					if err != nil {
-						fmt.Println("Ошибка преобразования: " + err.Error())
-						continue // Пропускаем некорректные значения
-					}
-					size = append(size, num) // Добавляем только корректные значения
-				}
-				numbersChan <- size
+			numRan := rand.Intn(100)
+			numMas = append(numMas, numRan) // Запись чисел в срез
+
+			if len(numMas) == 10 {
+				// Отправляем срез вместе с его номером в канал
+				randomNumbers <- SliceData{SliceNumber: sliceNumber, Numbers: numMas}
+				fmt.Printf("Отправлен срез #%d: %v\n", sliceNumber, numMas)
+				numMas = []int{} // Обнуляем срез для новых чисел
+				sliceNumber++    // Увеличиваем номер среза
 			}
 		}
 	}
+	// Отправляем остаток данных
+	if len(numMas) > 0 {
+		randomNumbers <- SliceData{SliceNumber: sliceNumber, Numbers: numMas}
+		fmt.Printf("Отправлен срез #%d: %v\n", sliceNumber, numMas)
+	}
 }
 
-func refactor(numbersChan chan []int, resultChan chan int) {
-	defer close(resultChan) // Закрываем канал после завершения работы горутины
-	count := 0
-	sum := 0
-	for totalNumbers := range numbersChan {
-		count += len(totalNumbers)
-		for _, num := range totalNumbers {
+func refactor(randomNumbers chan SliceData, resultChan chan Result) {
+	defer close(resultChan)
+
+	// Получаем данные из канала
+	for sliceData := range randomNumbers {
+		count := len(sliceData.Numbers)
+		sum := 0
+
+		// Считаем сумму элементов среза
+		for _, num := range sliceData.Numbers {
 			sum += num
 		}
-		// Отправляем результат каждые 10 чисел
-		if count >= 10 {
-			resultChan <- sum / count
-			count = 0
-			sum = 0
+
+		// Отправляем результат обработки с номером среза
+		if count > 0 {
+			resultChan <- Result{SliceNumber: sliceData.SliceNumber, Average: sum / count}
+		} else {
+			resultChan <- Result{SliceNumber: sliceData.SliceNumber, Average: 0}
 		}
-	}
-	if count > 0 {
-		resultChan <- sum / count
 	}
 }
 
 func main() {
-	numbersChan := make(chan []int)
-	resultChan := make(chan int)
+	randomNumbers := make(chan SliceData)
+	resultChan := make(chan Result)
 
-	go BufioScannerInput(numbersChan)    // Запустили горутину по сбору чисел
-	go refactor(numbersChan, resultChan) // Запустили обработку
+	// Запуск горутины для генерации случайных чисел
+	go randomNum(randomNumbers, 100)
 
+	// Запуск горутины для обработки данных
+	go refactor(randomNumbers, resultChan)
+
+	// Получение и вывод результата
 	for result := range resultChan {
-		fmt.Println("Результат:", result)
+		fmt.Printf("Среднее арифметическое среза #%d: %d\n", result.SliceNumber, result.Average)
 	}
-
-	fmt.Println("Программа завершена")
 }
