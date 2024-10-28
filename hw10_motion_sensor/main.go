@@ -11,9 +11,9 @@ type Result struct {
 	Average     int
 }
 
-func randomNum(randomNumbers chan int, limit int) {
+func randomNum(randomNumbers chan int, limit int, duration time.Duration) {
 	defer close(randomNumbers)
-	timeout := time.After(1 * time.Minute)
+	timeout := time.After(duration)
 
 	for count := 0; count < limit; count++ {
 		select {
@@ -21,8 +21,9 @@ func randomNum(randomNumbers chan int, limit int) {
 			fmt.Println("Время приёма данных истекло")
 			return
 		default:
-			numRan := rand.Intn(100)
+			numRan := rand.Intn(100) // #nosec G404
 			randomNumbers <- numRan
+			time.Sleep(1 * time.Second)
 		}
 	}
 }
@@ -63,9 +64,10 @@ func refactor(randomNumbers chan int, resultChan chan Result) {
 func main() {
 	randomNumbers := make(chan int)
 	resultChan := make(chan Result)
+	duration := 1 * time.Minute
 
 	// Запуск горутины для генерации случайных чисел
-	go randomNum(randomNumbers, 100)
+	go randomNum(randomNumbers, 100, duration)
 
 	// Запуск горутины для обработки данных
 	go refactor(randomNumbers, resultChan)
