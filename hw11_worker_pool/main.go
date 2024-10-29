@@ -20,7 +20,7 @@ func worker(countGorutines int) int {
 		}(i)
 	}
 	wg.Wait()
-	fmt.Println("Итоговое значение", number)
+	fmt.Println("Итоговое значение:", number)
 	return number
 }
 
