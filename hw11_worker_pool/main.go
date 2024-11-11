@@ -14,7 +14,7 @@ func worker(countGorutines int) int {
 		go func(id int) {
 			defer wg.Done()
 			mu.Lock()
-			number += 1
+			number++
 			fmt.Printf("Выполнилась %d горутина, результат %d\n", id, number)
 			defer mu.Unlock()
 		}(i)
@@ -25,9 +25,6 @@ func worker(countGorutines int) int {
 }
 
 func main() {
-
 	countGorutines := 100
-
 	worker(countGorutines)
-
 }
