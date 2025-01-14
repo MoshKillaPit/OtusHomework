@@ -1,4 +1,4 @@
-package db
+package repository
 
 import (
 	"database/sql"
@@ -13,7 +13,6 @@ func NewRepository(conn *sql.DB) *Repository {
 	return &Repository{conn: conn}
 }
 
-// User-related queries
 func (r *Repository) AddUser(user User) error {
 	query := `
 		INSERT INTO public.users (name, email, password) 
@@ -28,7 +27,7 @@ func (r *Repository) AddUser(user User) error {
 
 func (r *Repository) GetUsers() ([]User, error) {
 	query := `
-		SELECT id, name, email, password 
+		SELECT id, name, password, email 
 		FROM users
 	`
 	rows, err := r.conn.Query(query)
@@ -40,7 +39,7 @@ func (r *Repository) GetUsers() ([]User, error) {
 	var users []User
 	for rows.Next() {
 		var user User
-		if err := rows.Scan(&user.ID, &user.Name, &user.Email, &user.Password); err != nil {
+		if err = rows.Scan(&user.ID, &user.Name, &user.Email, &user.Password); err != nil {
 			return nil, fmt.Errorf("failed to scan user: %w", err)
 		}
 		users = append(users, user)
@@ -48,7 +47,6 @@ func (r *Repository) GetUsers() ([]User, error) {
 	return users, nil
 }
 
-// Product-related queries
 func (r *Repository) AddProduct(product Product) error {
 	query := `
 		INSERT INTO products (name, price) 
@@ -75,7 +73,7 @@ func (r *Repository) GetProducts() ([]Product, error) {
 	var products []Product
 	for rows.Next() {
 		var product Product
-		if err := rows.Scan(&product.ID, &product.Name, &product.Price); err != nil {
+		if err = rows.Scan(&product.ID, &product.Name, &product.Price); err != nil {
 			return nil, fmt.Errorf("failed to scan product: %w", err)
 		}
 		products = append(products, product)
@@ -95,7 +93,6 @@ func (r *Repository) DeleteProduct(id int) error {
 	return nil
 }
 
-// Order-related queries
 func (r *Repository) AddOrder(order Order) (int, error) {
 	query := `
 		INSERT INTO orders (user_id, order_date, total_amount) 
@@ -125,7 +122,7 @@ func (r *Repository) GetOrdersByUser(userID int) ([]Order, error) {
 	var orders []Order
 	for rows.Next() {
 		var order Order
-		if err := rows.Scan(&order.ID, &order.UserID, &order.OrderDate, &order.TotalAmount); err != nil {
+		if err = rows.Scan(&order.ID, &order.UserID, &order.OrderDate, &order.TotalAmount); err != nil {
 			return nil, fmt.Errorf("failed to scan order: %w", err)
 		}
 		orders = append(orders, order)
@@ -147,12 +144,24 @@ func (r *Repository) DeleteOrder(id int) error {
 
 func (r *Repository) AddOrderProduct(orderID int, product OrderProduct) error {
 	query := `
-		INSERT INTO order_products (order_id, product_id, quantity, price) 
-		VALUES ($1, $2, $3, $4)
+		INSERT INTO order_products (order_id, product_id, quantity) 
+		VALUES ($1, $2, $3)
 	`
 	_, err := r.conn.Exec(query, orderID, product.ProductID, product.Quantity, product.Price)
 	if err != nil {
 		return fmt.Errorf("failed to insert order product: %w", err)
+	}
+	return nil
+}
+
+func (r *Repository) PlaceOrder(order Order) error {
+	query := `
+	INSERT INTO orders (user_id, order_date, total_amount)
+	VALUES ($1, $2, $3)
+`
+	_, err := r.conn.Exec(query, order.UserID, order.OrderDate, order.TotalAmount)
+	if err != nil {
+		return fmt.Errorf("failed to place order: %w", err)
 	}
 	return nil
 }

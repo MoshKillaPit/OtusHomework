@@ -11,7 +11,7 @@ import (
 	"net/url"
 	"time"
 
-	"github.com/MoshKillaPit/OtusHomework/hw15_go_sql/db"
+	"github.com/MoshKillaPit/OtusHomework/hw15_go_sql/repository"
 )
 
 // isValidURL проверяет базовую корректность URL,
@@ -112,7 +112,7 @@ func fetchProducts(endpoint string) {
 func main() {
 	// Подключение к базе данных
 	dsn := "host=localhost port=5432 user=postgres password=root dbname=postgres sslmode=disable search_path=public"
-	database, dbErr := db.NewDB(dsn)
+	database, dbErr := repository.NewDB(dsn)
 	if dbErr != nil {
 		log.Fatalf("Error connecting to database: %v", dbErr)
 	}

@@ -7,23 +7,23 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/MoshKillaPit/OtusHomework/hw15_go_sql/db" // Импорт пакета для работы с базой данных
+	"github.com/MoshKillaPit/OtusHomework/hw15_go_sql/repository"
 )
 
-var database *db.DB
+var database *repository.Repository
 
 func main() {
 	// Подключение к базе данных
 	dsn := "host=localhost port=5432 user=postgres password=root dbname=postgres sslmode=disable search_path=public"
 	var err error
-	database, err = db.NewDB(dsn)
+	bd, err := repository.NewDB(dsn)
 	if err != nil {
 		// Вместо log.Fatalf используем log.Printf + return
-		log.Printf("Error connecting to database: %v", err)
+		log.Printf("Error connecting to repository: %v", err)
 		return
 	}
-	defer database.Close()
-
+	defer bd.Close()
+	database = repository.NewRepository(bd.Conn)
 	// Настройка маршрутов
 	http.HandleFunc("/users", handleUsers)
 	http.HandleFunc("/products", handleProducts)
@@ -63,7 +63,11 @@ func handleUsers(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		if err := database.AddUser(user.Name, user.Email, user.Password); err != nil {
+		if err := database.AddUser(repository.User{
+			Name:     user.Name,
+			Email:    user.Email,
+			Password: user.Password,
+		}); err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
@@ -95,7 +99,10 @@ func handleProducts(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		if err := database.AddProduct(product.Name, product.Price); err != nil {
+		if err := database.AddProduct(repository.Product{
+			Name:  product.Name,
+			Price: product.Price,
+		}); err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
@@ -119,16 +126,26 @@ func handleOrders(w http.ResponseWriter, r *http.Request) {
 	case http.MethodPost:
 		// Создание заказа
 		var order struct {
-			UserID    int               `json:"userid"`
-			OrderDate string            `json:"orderdate"`
-			Products  []db.OrderProduct `json:"products"`
+			UserID    int                       `json:"userid"`
+			OrderDate string                    `json:"orderdate"`
+			Products  []repository.OrderProduct `json:"products"`
 		}
 		if err := json.NewDecoder(r.Body).Decode(&order); err != nil {
 			http.Error(w, "Invalid request body", http.StatusBadRequest)
 			return
 		}
 
-		if err := database.PlaceOrder(order.UserID, order.OrderDate, order.Products); err != nil {
+		var sum int
+
+		for _, product := range order.Products {
+			sum += product.Price
+		}
+
+		if err := database.PlaceOrder(repository.Order{
+			UserID:      order.UserID,
+			OrderDate:   order.OrderDate,
+			TotalAmount: sum,
+		}); err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
