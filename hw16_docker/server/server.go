@@ -7,7 +7,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/MoshKillaPit/OtusHomework/hw15_go_sql/repository"
+	"github.com/fixme_my_friend/hw16_docker/repository"
 )
 
 var database *repository.Repository
