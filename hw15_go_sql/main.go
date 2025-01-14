@@ -2,28 +2,45 @@ package main
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
 	"log"
 	"net/http"
 	"net/url"
+	"time"
 
 	"github.com/MoshKillaPit/OtusHomework/hw15_go_sql/db"
 )
 
+// isValidURL проверяет базовую корректность URL,
+// возвращает true, если URL подходит.
 func isValidURL(endpoint string) bool {
 	u, err := url.ParseRequestURI(endpoint)
-	return err == nil && u.Scheme != "" && u.Host != ""
+	return err == nil && (u.Scheme == "http" || u.Scheme == "https") && u.Host != ""
 }
 
+// createUser отправляет POST-запрос в некое API для создания пользователя.
 func createUser(endpoint string, user map[string]string) {
 	if !isValidURL(endpoint) {
 		log.Printf("Invalid URL: %s", endpoint)
 		return
 	}
 	postData, _ := json.Marshal(user)
-	resp, reqErr := http.Post(endpoint, "application/json", bytes.NewBuffer(postData))
+
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, endpoint, bytes.NewBuffer(postData))
+	if err != nil {
+		fmt.Println("Ошибка создания запроса:", err)
+		return
+	}
+	req.Header.Set("Content-Type", "application/json")
+
+	client := &http.Client{}
+	resp, reqErr := client.Do(req)
 	if reqErr != nil {
 		fmt.Println("Ошибка создания пользователя:", reqErr)
 		return
@@ -31,16 +48,29 @@ func createUser(endpoint string, user map[string]string) {
 	defer resp.Body.Close()
 
 	body, _ := io.ReadAll(resp.Body)
-	fmt.Printf("Response: %s\n", body)
+	fmt.Printf("[createUser] Response: %s\n", body)
 }
 
+// createProduct отправляет POST-запрос в некое API для создания продукта.
 func createProduct(endpoint string, product map[string]interface{}) {
 	if !isValidURL(endpoint) {
 		log.Printf("Invalid URL: %s", endpoint)
 		return
 	}
 	postData, _ := json.Marshal(product)
-	resp, reqErr := http.Post(endpoint, "application/json", bytes.NewBuffer(postData))
+
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, endpoint, bytes.NewBuffer(postData))
+	if err != nil {
+		fmt.Println("Ошибка создания запроса:", err)
+		return
+	}
+	req.Header.Set("Content-Type", "application/json")
+
+	client := &http.Client{}
+	resp, reqErr := client.Do(req)
 	if reqErr != nil {
 		fmt.Println("Ошибка создания продукта:", reqErr)
 		return
@@ -48,15 +78,27 @@ func createProduct(endpoint string, product map[string]interface{}) {
 	defer resp.Body.Close()
 
 	body, _ := io.ReadAll(resp.Body)
-	fmt.Printf("Response: %s\n", body)
+	fmt.Printf("[createProduct] Response: %s\n", body)
 }
 
+// fetchProducts отправляет GET-запрос для получения списка продуктов.
 func fetchProducts(endpoint string) {
 	if !isValidURL(endpoint) {
 		log.Printf("Invalid URL: %s", endpoint)
 		return
 	}
-	resp, reqErr := http.Get(endpoint)
+
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, endpoint, nil)
+	if err != nil {
+		fmt.Println("Ошибка создания запроса:", err)
+		return
+	}
+
+	client := &http.Client{}
+	resp, reqErr := client.Do(req)
 	if reqErr != nil {
 		fmt.Println("Ошибка получения списка продуктов:", reqErr)
 		return
@@ -64,7 +106,7 @@ func fetchProducts(endpoint string) {
 	defer resp.Body.Close()
 
 	body, _ := io.ReadAll(resp.Body)
-	fmt.Printf("Products: %s\n", body)
+	fmt.Printf("[fetchProducts] Products: %s\n", body)
 }
 
 func main() {
@@ -76,50 +118,16 @@ func main() {
 	}
 	defer database.Close()
 
-	// Добавление пользователя
-	addUserErr := database.AddUser("Alice", "alice@gmail.com", "securepassword")
-	if addUserErr != nil {
-		log.Printf("Error adding user: %v", addUserErr)
-		database.Close()
-		return
-	}
-	fmt.Println("User added successfully!")
+	createUser("http://localhost:8080/users", map[string]string{
+		"name":     "AliceFromHTTP",
+		"email":    "alice_http@example.com",
+		"password": "somepass",
+	})
 
-	// Получение списка пользователей
-	users, getUsersErr := database.GetUsers()
-	if getUsersErr != nil {
-		log.Printf("Error fetching users: %v", getUsersErr)
-		database.Close()
-		return
-	}
-	fmt.Println("Users:", users)
+	createProduct("http://localhost:8080/products", map[string]interface{}{
+		"name":  "HTTP Product",
+		"price": 123,
+	})
 
-	// Пример добавления продукта
-	addProductErr1 := database.AddProduct("Laptop", 1500)
-	if addProductErr1 != nil {
-		log.Printf("Error adding product: %v", addProductErr1)
-		database.Close()
-		return
-	}
-	addProductErr2 := database.AddProduct("Mouse", 50)
-	if addProductErr2 != nil {
-		log.Printf("Error adding product: %v", addProductErr2)
-		database.Close()
-		return
-	}
-	fmt.Println("Product added successfully!")
-
-	// Пример создания заказа с продуктами
-	products := []db.OrderProduct{
-		{ProductID: 1, Quantity: 1, Price: 1500}, // Laptop
-		{ProductID: 2, Quantity: 2, Price: 50},   // Mouse
-	}
-
-	placeOrderErr := database.PlaceOrder(1, "2025-01-13", products)
-	if placeOrderErr != nil {
-		log.Printf("Error placing order: %v", placeOrderErr)
-		database.Close()
-		return
-	}
-	fmt.Println("Order placed successfully!")
+	fetchProducts("http://localhost:8080/products")
 }

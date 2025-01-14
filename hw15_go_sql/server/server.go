@@ -18,11 +18,8 @@ func main() {
 	var err error
 	database, err = db.NewDB(dsn)
 	if err != nil {
-		log.Fatalf("Error connecting to database: %v", err)
-	}
-	defer database.Close()
-	if err != nil {
-		log.Printf("Server error: %v", err)
+		// Вместо log.Fatalf используем log.Printf + return
+		log.Printf("Error connecting to database: %v", err)
 		return
 	}
 	defer database.Close()
@@ -43,9 +40,12 @@ func main() {
 		IdleTimeout:  10 * time.Second,
 	}
 
+	// В случае ошибки – просто логируем и выходим,
+	// что даст сработать defer-позовам (закрыть базу и т.д.)
 	err = srv.ListenAndServe()
 	if err != nil {
-		log.Fatalf("Server error: %v", err)
+		log.Printf("Server error: %v", err)
+		return
 	}
 }
 
