@@ -5,12 +5,13 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/fixme_my_friend/hw16_docker/repository"
 	"io"
 	"log"
 	"net/http"
 	"net/url"
 	"time"
+
+	"github.com/fixme_my_friend/hw16_docker/repository"
 )
 
 // isValidURL проверяет базовую корректность URL,
@@ -33,7 +34,7 @@ func createUser(endpoint string, user map[string]string) {
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodPost, endpoint, bytes.NewBuffer(postData))
 	if err != nil {
-		fmt.Println("Ошибка создания запроса:", err)
+		log.Printf("Ошибка создания запроса: %v", err)
 		return
 	}
 	req.Header.Set("Content-Type", "application/json")
@@ -41,13 +42,13 @@ func createUser(endpoint string, user map[string]string) {
 	client := &http.Client{}
 	resp, reqErr := client.Do(req)
 	if reqErr != nil {
-		fmt.Println("Ошибка создания пользователя:", reqErr)
+		log.Printf("Ошибка создания пользователя: %v", reqErr)
 		return
 	}
 	defer resp.Body.Close()
 
 	body, _ := io.ReadAll(resp.Body)
-	fmt.Printf("[createUser] Response: %s\n", body)
+	log.Printf("[createUser] Response: %s\n", body)
 }
 
 // createProduct отправляет POST-запрос в некое API для создания продукта.
@@ -63,7 +64,7 @@ func createProduct(endpoint string, product map[string]interface{}) {
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodPost, endpoint, bytes.NewBuffer(postData))
 	if err != nil {
-		fmt.Println("Ошибка создания запроса:", err)
+		log.Printf("Ошибка создания запроса: %v", err)
 		return
 	}
 	req.Header.Set("Content-Type", "application/json")
@@ -71,13 +72,13 @@ func createProduct(endpoint string, product map[string]interface{}) {
 	client := &http.Client{}
 	resp, reqErr := client.Do(req)
 	if reqErr != nil {
-		fmt.Println("Ошибка создания продукта:", reqErr)
+		log.Printf("Ошибка создания продукта: %v", reqErr)
 		return
 	}
 	defer resp.Body.Close()
 
 	body, _ := io.ReadAll(resp.Body)
-	fmt.Printf("[createProduct] Response: %s\n", body)
+	log.Printf("[createProduct] Response: %s\n", body)
 }
 
 // fetchProducts отправляет GET-запрос для получения списка продуктов.
@@ -92,20 +93,20 @@ func fetchProducts(endpoint string) {
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, endpoint, nil)
 	if err != nil {
-		fmt.Println("Ошибка создания запроса:", err)
+		log.Printf("Ошибка создания запроса: %v", err)
 		return
 	}
 
 	client := &http.Client{}
 	resp, reqErr := client.Do(req)
 	if reqErr != nil {
-		fmt.Println("Ошибка получения списка продуктов:", reqErr)
+		log.Printf("Ошибка получения списка продуктов: %v", reqErr)
 		return
 	}
 	defer resp.Body.Close()
 
 	body, _ := io.ReadAll(resp.Body)
-	fmt.Printf("[fetchProducts] Products: %s\n", body)
+	log.Printf("[fetchProducts] Products: %s\n", body)
 }
 
 func main() {
@@ -117,18 +118,26 @@ func main() {
 	}
 	defer database.Close()
 
-	// Запуск сервера API
+	// Настройка сервера API
+	server := &http.Server{
+		Addr:         ":8080",
+		ReadTimeout:  15 * time.Second,
+		WriteTimeout: 15 * time.Second,
+		IdleTimeout:  60 * time.Second,
+		Handler:      http.NewServeMux(),
+	}
+
+	server.Handler.(*http.ServeMux).HandleFunc("/users", func(w http.ResponseWriter, _ *http.Request) {
+		fmt.Fprintln(w, "User endpoint reached!")
+	})
+
+	server.Handler.(*http.ServeMux).HandleFunc("/products", func(w http.ResponseWriter, _ *http.Request) {
+		fmt.Fprintln(w, "Product endpoint reached!")
+	})
+
 	go func() {
-		http.HandleFunc("/users", func(w http.ResponseWriter, r *http.Request) {
-			fmt.Fprintln(w, "User endpoint reached!")
-		})
-
-		http.HandleFunc("/products", func(w http.ResponseWriter, r *http.Request) {
-			fmt.Fprintln(w, "Product endpoint reached!")
-		})
-
 		log.Println("Server running on :8080")
-		log.Fatal(http.ListenAndServe(":8080", nil))
+		log.Fatal(server.ListenAndServe())
 	}()
 
 	// Ожидание запуска сервера
